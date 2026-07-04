@@ -2,18 +2,15 @@ export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  // 1. Ambil parameter brand
   const brandParam = url.searchParams.get('brand');
   if (!brandParam) {
     return notFound();
   }
 
   try {
-    // 2. Baca file list.txt dari aset statis (public/)
-    //    Gunakan URL absolut untuk env.ASSETS.fetch
-    const assetUrl = new URL('/list.txt', url.origin);
-    const listResp = await env.ASSETS.fetch(assetUrl);
-
+    // === BACA FILE LIST.TXT DARI ASSET STATIS ===
+    // Gunakan path relatif tanpa host, karena env.ASSETS adalah Fetcher untuk aset statis
+    const listResp = await env.ASSETS.fetch('/list.txt');
     if (!listResp.ok) {
       return new Response(`Gagal membaca list.txt (status ${listResp.status})`, { status: 500 });
     }
@@ -23,7 +20,6 @@ export async function onRequest(context) {
       .map(line => line.trim())
       .filter(line => line.length > 0);
 
-    // 3. Cari brand (case-insensitive)
     const found = lines.some(line => line.toLowerCase() === brandParam.toLowerCase());
     if (!found) {
       return notFound();
@@ -32,7 +28,7 @@ export async function onRequest(context) {
     const BRAND = brandParam.toUpperCase();
     const fullUrl = url.href;
 
-    // 4. Generate HTML (sama seperti sebelumnya)
+    // === GENERATE HTML (sama seperti sebelumnya) ===
     const html = `<!doctype html>
 <html amp lang="id">
 <head>
