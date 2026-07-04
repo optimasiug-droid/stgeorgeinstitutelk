@@ -1,5 +1,3 @@
-import { brands } from './brands.js';
-
 export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
@@ -7,15 +5,28 @@ export async function onRequest(context) {
   const brandParam = url.searchParams.get('brand');
   if (!brandParam) return notFound();
 
-  // Cek apakah brand ada di array (case-insensitive)
-  const found = brands.some(b => b.toLowerCase() === brandParam.toLowerCase());
-  if (!found) return notFound();
+  try {
+    // Baca list.txt dari aset statis (pakai fetch absolut)
+    const listUrl = new URL('/list.txt', url.origin).href;
+    const listResp = await fetch(listUrl);
 
-  const BRAND = brandParam.toUpperCase();
-  const fullUrl = url.href;
+    if (!listResp.ok) {
+      return new Response(`Gagal membaca list.txt (status ${listResp.status})`, { status: 500 });
+    }
 
-  // === HTML AMP (sama seperti sebelumnya) ===
-  const html = `<!doctype html>
+    const text = await listResp.text();
+    const lines = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    const found = lines.some(line => line.toLowerCase() === brandParam.toLowerCase());
+    if (!found) return notFound();
+
+    const BRAND = brandParam.toUpperCase();
+    const fullUrl = url.href;
+
+    // === HTML AMP (sama seperti sebelumnya) ===
+    const html = `<!doctype html>
 <html amp lang="id">
 <head>
   <meta charset="utf-8">
@@ -83,9 +94,13 @@ export async function onRequest(context) {
 </body>
 </html>`;
 
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html' }
-  });
+    return new Response(html, {
+      headers: { 'Content-Type': 'text/html' }
+    });
+
+  } catch (err) {
+    return new Response(`Internal Error: ${err.message}`, { status: 500 });
+  }
 }
 
 function notFound() {
