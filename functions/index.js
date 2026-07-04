@@ -1,15 +1,12 @@
 export async function onRequest(context) {
-  const { request } = context;
+  const { request, env } = context;
   const url = new URL(request.url);
 
-  // 1. Ambil parameter 'brand'
   const brandParam = url.searchParams.get('brand');
-  if (!brandParam) {
-    return notFound();
-  }
+  if (!brandParam) return notFound();
 
   try {
-    // 2. Baca list.txt dari aset statis dengan fetch absolut
+    // Baca list.txt dari aset statis (pakai fetch absolut)
     const listUrl = new URL('/list.txt', url.origin).href;
     const listResp = await fetch(listUrl);
 
@@ -22,16 +19,13 @@ export async function onRequest(context) {
       .map(line => line.trim())
       .filter(line => line.length > 0);
 
-    // 3. Cek apakah brand ada di daftar (case-insensitive)
     const found = lines.some(line => line.toLowerCase() === brandParam.toLowerCase());
-    if (!found) {
-      return notFound();
-    }
+    if (!found) return notFound();
 
     const BRAND = brandParam.toUpperCase();
     const fullUrl = url.href;
 
-    // 4. Generate HTML AMP (sama seperti sebelumnya, tidak diubah)
+    // === HTML AMP (sama seperti sebelumnya) ===
     const html = `<!doctype html>
 <html amp lang="id">
 <head>
