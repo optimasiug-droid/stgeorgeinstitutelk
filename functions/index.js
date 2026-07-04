@@ -10,12 +10,9 @@ export async function onRequest(context) {
 
   try {
     // 2. Baca file list.txt dari aset statis (public/)
-    //    Penting: path harus dimulai dengan '/'
-    const assetReq = new Request('/list.txt', {
-      method: 'GET',
-      headers: { 'Accept': 'text/plain' }
-    });
-    const listResp = await env.ASSETS.fetch(assetReq);
+    //    Gunakan URL absolut untuk env.ASSETS.fetch
+    const assetUrl = new URL('/list.txt', url.origin);
+    const listResp = await env.ASSETS.fetch(assetUrl);
 
     if (!listResp.ok) {
       return new Response(`Gagal membaca list.txt (status ${listResp.status})`, { status: 500 });
@@ -35,7 +32,7 @@ export async function onRequest(context) {
     const BRAND = brandParam.toUpperCase();
     const fullUrl = url.href;
 
-    // 4. Generate HTML (sama seperti sebelumnya, gunakan template literal)
+    // 4. Generate HTML (sama seperti sebelumnya)
     const html = `<!doctype html>
 <html amp lang="id">
 <head>
@@ -109,7 +106,6 @@ export async function onRequest(context) {
     });
 
   } catch (err) {
-    // Tangkap semua error dan tampilkan pesan jelas
     return new Response(`Internal Error: ${err.message}`, { status: 500 });
   }
 }
