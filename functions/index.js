@@ -34,15 +34,6 @@ export async function onRequest(context) {
     
     <script async src="https://cdn.ampproject.org/v0.js"></script>
     <script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>
-    	<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9F1DGMDER6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-9F1DGMDER6');
-</script>
     <title>${BRAND} Teacher Training Courses Sri Lanka | St. George Institute</title>
     <link itemprop="mainEntityOfPage" rel="canonical" href="#">
     <link rel="alternate" href="#" hreflang="id" />
