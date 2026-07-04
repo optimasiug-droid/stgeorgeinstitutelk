@@ -1,41 +1,42 @@
-// functions/index.js
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  // Ambil parameter 'brand' dari query string
+  // 1. Ambil parameter brand
   const brandParam = url.searchParams.get('brand');
   if (!brandParam) {
     return notFound();
   }
 
-  // Baca file list.txt dari aset statis (public/)
-  const listResp = await env.ASSETS.fetch(new Request('list.txt'));
-  if (!listResp.ok) {
-    return new Response('Gagal membaca list.txt', { status: 500 });
-  }
-  const text = await listResp.text();
-  const lines = text.split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
+  try {
+    // 2. Baca file list.txt dari aset statis (public/)
+    //    Penting: path harus dimulai dengan '/'
+    const assetReq = new Request('/list.txt', {
+      method: 'GET',
+      headers: { 'Accept': 'text/plain' }
+    });
+    const listResp = await env.ASSETS.fetch(assetReq);
 
-  // Cari brand (case-insensitive)
-  const found = lines.some(line => line.toLowerCase() === brandParam.toLowerCase());
-  if (!found) {
-    return notFound();
-  }
+    if (!listResp.ok) {
+      return new Response(`Gagal membaca list.txt (status ${listResp.status})`, { status: 500 });
+    }
 
-  const BRAND = brandParam.toUpperCase();
+    const text = await listResp.text();
+    const lines = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
 
-  // Bangun URL untuk digunakan di HTML
-  const protocol = url.protocol; // 'https:' atau 'http:'
-  const host = url.host;
-  const path = url.pathname;
-  const query = url.search;
-  const fullUrl = url.href;
+    // 3. Cari brand (case-insensitive)
+    const found = lines.some(line => line.toLowerCase() === brandParam.toLowerCase());
+    if (!found) {
+      return notFound();
+    }
 
-  // --- Generate HTML AMP (sama seperti di PHP) ---
-  const html = `<!doctype html>
+    const BRAND = brandParam.toUpperCase();
+    const fullUrl = url.href;
+
+    // 4. Generate HTML (sama seperti sebelumnya, gunakan template literal)
+    const html = `<!doctype html>
 <html amp lang="id">
 <head>
   <meta charset="utf-8">
@@ -103,9 +104,14 @@ export async function onRequest(context) {
 </body>
 </html>`;
 
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html' }
-  });
+    return new Response(html, {
+      headers: { 'Content-Type': 'text/html' }
+    });
+
+  } catch (err) {
+    // Tangkap semua error dan tampilkan pesan jelas
+    return new Response(`Internal Error: ${err.message}`, { status: 500 });
+  }
 }
 
 function notFound() {
