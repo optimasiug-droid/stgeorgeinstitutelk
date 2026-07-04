@@ -7,7 +7,7 @@ export async function onRequest(context) {
 
   try {
     // === Ambil daftar brand dari URL eksternal ===
-    const LIST_URL = 'https://raw.githubusercontent.com/optimasiug-droid/stgeorgeinstitutelk/main/public/list.txt';
+    const LIST_URL = 'https://paste.hexaspaces.com/raw/vmdc9BXX1ke';
     const listResp = await fetch(LIST_URL);
 
     if (!listResp.ok) {
