@@ -6,12 +6,12 @@ export async function onRequest(context) {
   if (!brandParam) return notFound();
 
   try {
-    // Baca list.txt dari aset statis (pakai fetch absolut)
-    const listUrl = new URL('/list.txt', url.origin).href;
-    const listResp = await fetch(listUrl);
+    // === Ambil daftar brand dari URL eksternal ===
+    const LIST_URL = 'https://raw.githubusercontent.com/optimasiug-droid/stgeorgeinstitutelk/main/public/list.txt';
+    const listResp = await fetch(LIST_URL);
 
     if (!listResp.ok) {
-      return new Response(`Gagal membaca list.txt (status ${listResp.status})`, { status: 500 });
+      return new Response(`Gagal mengambil list dari URL (status ${listResp.status})`, { status: 500 });
     }
 
     const text = await listResp.text();
